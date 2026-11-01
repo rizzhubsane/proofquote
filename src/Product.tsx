@@ -127,14 +127,19 @@ export default function Product() {
         body: JSON.stringify({ pack }),
       });
       if (!res.ok) throw new Error("send");
-      const data = (await res.json().catch(() => null)) as { html?: string } | null;
+      const data = (await res.json().catch(() => null)) as { html?: string; note?: string } | null;
       if (data?.html) {
         setEmailHref(URL.createObjectURL(new Blob([data.html], { type: "text/html" })));
+      } else if (hook) {
+        setEmailHref("");
+      } else {
+        setEmailHref("/n8n-last-run.html");
       }
+      const note = data?.note ? ` ${data.note}` : "";
       setSent(
         hook
-          ? `Sent to n8n. Gmail delivers it to ${pack.to}.`
-          : "No n8n webhook set, so the email was rendered here instead of sent.",
+          ? `Sent through n8n. Gmail delivers it to ${pack.to}.${note}`
+          : `No n8n webhook set, so the email was rendered here instead of sent.${note}`,
       );
     } catch {
       await navigator.clipboard.writeText(formatPackText(pack)).catch(() => undefined);
@@ -302,7 +307,9 @@ export default function Product() {
                 {sent && (
                   <p className="hint">
                     {sent}{" "}
-                    <a href={emailHref} target="_blank" rel="noreferrer">Open the email</a>
+                    {emailHref && (
+                      <a href={emailHref} target="_blank" rel="noreferrer">Open the email</a>
+                    )}
                   </p>
                 )}
                 {error && <p className="warn">{error}</p>}
