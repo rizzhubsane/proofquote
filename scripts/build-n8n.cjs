@@ -1,0 +1,136 @@
+// Writes n8n/proofquote-send.json. Run: node scripts/build-n8n.cjs
+const fs = require("fs");
+const path = require("path");
+
+const BUILD_REQUEST = String.raw`
+const pack = $input.first().json.body?.pack || $input.first().json.pack || {};
+if ((pack.lines || []).length === 0) throw new Error('Refusing to send a quote with no checked lines');
+const lines = pack.lines.map(l => '- ' + l.line + ' | list: ' + l.list).join('\n');
+const prompt = [
+  'Write a short WhatsApp message from a distributor salesperson to the dealer ' + pack.party + ', sharing quote ' + pack.quote_no + '.',
+  'Polite, plain, at most 6 lines. Hinglish is fine.',
+  'Use ONLY the quote lines below and the GST rate on their list line.',
+  'Do not add any number, discount, scheme, rate or date that is not below.',
+  '',
+  lines,
+].join('\n');
+return [{ json: { pack, geminiBody: { contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { temperature: 0.3 } } } }];
+`;
+
+const CHECK_AND_RENDER = String.raw`
+const pack = $('Build Gemini request').first().json.pack;
+const drafted = $input.first().json.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+const nums = (s) => new Set((String(s).match(/\d[\d,]*(?:\.\d+)?/g) || []).map(n => String(parseFloat(n.replace(/,/g, '')))));
+const allowed = new Set([...nums(pack.quote_no), ...pack.lines.flatMap(l => [...nums(l.line), ...nums(l.list)])]);
+const extra = [...nums(drafted)].filter(n => !allowed.has(n));
+const template = 'Namaste. Quote ' + pack.quote_no + ' for ' + pack.party + ':\n' + pack.lines.map(l => '• ' + l.line).join('\n') + '\nGST as per our price list. Thank you.';
+let message = template;
+let note = 'Template (Gemini did not answer)';
+if (drafted && extra.length === 0) { message = drafted; note = 'Written by Gemini; every number checked against the quote lines'; }
+else if (drafted) { note = 'Gemini draft rejected: it added ' + extra.join(', ') + '. Template used'; }
+
+const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const td = 'padding:10px 12px 10px 0;border-top:1px solid #d8d0c0;vertical-align:top';
+const rows = pack.lines.map(l => '<tr><td style="' + td + '">' + esc(l.line) + '</td><td style="' + td + ';color:#6a6458;font-size:13px">' + esc(l.list) + '</td></tr>').join('');
+const removed = (pack.removed || []).map(r => '<li><s>' + esc(r.line) + '</s>' + (r.list ? ' <span style="color:#6a6458;font-size:13px">List says: ' + esc(r.list) + '</span>' : '') + '</li>').join('');
+const html = '<article style="font-family:Georgia,serif;max-width:680px;margin:auto;background:#fffdf8;border:1px solid #1c1914;padding:32px;color:#1c1914">'
+  + '<div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#6a6458">Proofquote</div>'
+  + '<h1 style="font-size:26px;margin:6px 0 2px">' + esc(pack.quote_no) + '</h1>'
+  + '<div style="color:#6a6458;margin-bottom:20px">' + esc(pack.party) + '</div>'
+  + '<table style="width:100%;border-collapse:collapse">' + rows + '</table>'
+  + (removed ? '<h2 style="font-size:12px;letter-spacing:.1em;text-transform:uppercase">Removed before sending</h2><ul>' + removed + '</ul>' : '')
+  + '<h2 style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin-top:24px">WhatsApp draft for ' + esc(pack.party) + '</h2>'
+  + '<pre style="white-space:pre-wrap;font-family:Georgia,serif;background:#f3efe4;padding:14px;margin:0">' + esc(message) + '</pre>'
+  + '<div style="color:#6a6458;font-size:12px;margin-top:6px">' + esc(note) + '</div>'
+  + '<p style="color:#6a6458;font-style:italic">' + esc(pack.footer) + '</p></article>';
+return [{ json: { to: pack.to, subject: pack.quote_no + ' · ' + pack.party, html, message, note } }];
+`;
+
+const workflow = {
+  name: "Proofquote: email a checked quote",
+  nodes: [
+    {
+      parameters: { httpMethod: "POST", path: "proofquote-send", responseMode: "responseNode", options: { allowedOrigins: "*" } },
+      id: "webhook-in",
+      name: "Webhook",
+      type: "n8n-nodes-base.webhook",
+      typeVersion: 2,
+      position: [200, 300],
+      webhookId: "proofquote-send",
+    },
+    {
+      parameters: { jsCode: BUILD_REQUEST.trim() },
+      id: "build-request",
+      name: "Build Gemini request",
+      type: "n8n-nodes-base.code",
+      typeVersion: 2,
+      position: [420, 300],
+    },
+    {
+      parameters: {
+        method: "POST",
+        url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+        authentication: "genericCredentialType",
+        genericAuthType: "httpHeaderAuth",
+        sendBody: true,
+        specifyBody: "json",
+        jsonBody: "={{ JSON.stringify($json.geminiBody) }}",
+        options: { timeout: 20000 },
+      },
+      id: "gemini",
+      name: "Gemini: draft WhatsApp message",
+      type: "n8n-nodes-base.httpRequest",
+      typeVersion: 4.2,
+      position: [640, 300],
+      onError: "continueRegularOutput",
+      credentials: { httpHeaderAuth: { id: "REPLACE_WITH_GEMINI_HEADER_CREDENTIAL", name: "Gemini key (x-goog-api-key)" } },
+    },
+    {
+      parameters: { jsCode: CHECK_AND_RENDER.trim() },
+      id: "check-render",
+      name: "Check message, render email",
+      type: "n8n-nodes-base.code",
+      typeVersion: 2,
+      position: [860, 300],
+    },
+    {
+      parameters: { sendTo: "={{ $json.to }}", subject: "={{ $json.subject }}", emailType: "html", message: "={{ $json.html }}", options: {} },
+      id: "gmail-out",
+      name: "Gmail to sales lead",
+      type: "n8n-nodes-base.gmail",
+      typeVersion: 2.1,
+      position: [1080, 300],
+      webhookId: "proofquote-gmail",
+      credentials: { gmailOAuth2: { id: "REPLACE_WITH_GMAIL_CREDENTIAL", name: "Gmail account" } },
+    },
+    {
+      parameters: {
+        respondWith: "json",
+        responseBody: "={{ { ok: true, via: 'n8n-gmail', to: $('Check message, render email').first().json.to, note: $('Check message, render email').first().json.note } }}",
+      },
+      id: "respond",
+      name: "Respond",
+      type: "n8n-nodes-base.respondToWebhook",
+      typeVersion: 1.1,
+      position: [1300, 300],
+    },
+  ],
+  connections: {
+    Webhook: { main: [[{ node: "Build Gemini request", type: "main", index: 0 }]] },
+    "Build Gemini request": { main: [[{ node: "Gemini: draft WhatsApp message", type: "main", index: 0 }]] },
+    "Gemini: draft WhatsApp message": { main: [[{ node: "Check message, render email", type: "main", index: 0 }]] },
+    "Check message, render email": { main: [[{ node: "Gmail to sales lead", type: "main", index: 0 }]] },
+    "Gmail to sales lead": { main: [[{ node: "Respond", type: "main", index: 0 }]] },
+  },
+  active: false,
+  settings: { executionOrder: "v1" },
+  versionId: "proofquote-v3",
+  meta: { templateCredsSetupCompleted: false },
+  tags: [{ name: "proofquote" }],
+};
+
+const out = path.join(__dirname, "../n8n/proofquote-send.json");
+fs.writeFileSync(out, JSON.stringify(workflow, null, 2) + "\n");
+console.log("wrote", out);
+
+module.exports = { BUILD_REQUEST, CHECK_AND_RENDER };

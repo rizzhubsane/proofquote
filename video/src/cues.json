@@ -1,0 +1,29 @@
+{
+  "fps": 30,
+  "durationSec": 120,
+  "scene": {
+    "chat": 24,
+    "slips": 270,
+    "stamp": 540,
+    "title": 700,
+    "app": 900,
+    "check": 1240,
+    "email": 2520,
+    "end": 3120
+  },
+  "clicks": [
+    { "frame": 70, "kind": "ui" },
+    { "frame": 300, "kind": "ui" },
+    { "frame": 420, "kind": "ui" },
+    { "frame": 548, "kind": "stamp" },
+    { "frame": 1240, "kind": "ui" },
+    { "frame": 1290, "kind": "tick" },
+    { "frame": 1312, "kind": "tick" },
+    { "frame": 1334, "kind": "stamp" },
+    { "frame": 1356, "kind": "stamp" },
+    { "frame": 1378, "kind": "tick" },
+    { "frame": 1860, "kind": "ui" },
+    { "frame": 2040, "kind": "ui" },
+    { "frame": 2360, "kind": "send" }
+  ]
+}

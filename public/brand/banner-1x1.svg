@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" role="img" aria-label="Proofquote">
+  <rect width="1080" height="1080" fill="#1c1914"/>
+  <circle cx="540" cy="430" r="210" fill="none" stroke="#f7f4ec" stroke-width="10"/>
+  <text x="540" y="470" text-anchor="middle" font-family="Georgia, serif" font-size="96" font-weight="700" fill="#d46a6a">12%</text>
+  <line x1="360" y1="560" x2="720" y2="300" stroke="#f7f4ec" stroke-width="14"/>
+  <text x="540" y="760" text-anchor="middle" font-family="Georgia, serif" font-size="56" fill="#f7f4ec">Proofquote</text>
+  <text x="540" y="830" text-anchor="middle" font-family="Georgia, serif" font-size="28" fill="#c4a574">No list, no rate.</text>
+</svg>

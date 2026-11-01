@@ -1,0 +1,40 @@
+{
+  "at": "2026-11-01T20:14:19.803Z",
+  "via": "local-render (no webhook set, nothing emailed)",
+  "subject": "Q-1042 · Sharma Traders, Ambala",
+  "to": "ravi.sales@goyaldistributors.in",
+  "dealer_message": {
+    "message": "Namaste. Quote Q-1042 for Sharma Traders, Ambala:\n• 400 kg MS angle 50x50x6 at ₹62 per kg\n• 20 L red oxide primer at ₹180 per litre\n• Freight extra at actuals\nGST as per our price list. Thank you.",
+    "note": "Template (no model key on the server)"
+  },
+  "pack": {
+    "to": "ravi.sales@goyaldistributors.in",
+    "quote_no": "Q-1042",
+    "party": "Sharma Traders, Ambala",
+    "lines": [
+      {
+        "line": "400 kg MS angle 50x50x6 at ₹62 per kg",
+        "list": "MS angle 50x50x6: ₹62 per kg. GST 18%. HSN 7216."
+      },
+      {
+        "line": "20 L red oxide primer at ₹180 per litre",
+        "list": "Red oxide primer: ₹180 per litre. GST 18%. HSN 3208."
+      },
+      {
+        "line": "Freight extra at actuals",
+        "list": "Freight extra at actuals. Quotes valid 7 days."
+      }
+    ],
+    "removed": [
+      {
+        "line": "GST 12% on MS angle (Sharma special)",
+        "list": "MS angle 50x50x6: ₹62 per kg. GST 18%. HSN 7216."
+      },
+      {
+        "line": "15% festive scheme discount on this quote",
+        "list": "No scheme discount this week."
+      }
+    ],
+    "footer": "Every rate above appears on this week's price list. Checked by Proofquote (AI-assisted); approved by the sales lead."
+  }
+}

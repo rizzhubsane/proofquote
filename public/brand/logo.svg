@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Proofquote">
+  <rect width="240" height="240" fill="#f3efe4"/>
+  <circle cx="120" cy="120" r="78" fill="none" stroke="#1c1914" stroke-width="4"/>
+  <text x="120" y="138" text-anchor="middle" font-family="Georgia, serif" font-size="42" font-weight="700" fill="#9a1f1f">12%</text>
+  <line x1="62" y1="168" x2="178" y2="72" stroke="#1c1914" stroke-width="6"/>
+</svg>

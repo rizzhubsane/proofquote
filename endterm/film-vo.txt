@@ -1,0 +1,15 @@
+Nine forty at night. Ravi does inside sales at a steel distributor in Ambala. Sharma Traders wants four hundred kilos of M S angle and twenty litres of primer. Then a WhatsApp: twelve percent lagao, eighteen nahi chalega.
+
+Ravi's price list says G S T eighteen percent. The draft he is about to send says twelve. It reads like a normal quote. Ask a chatbot to tidy it up, and the twelve comes back cleaner. And what is on the quote becomes the invoice.
+
+Proofquote takes two things. This week's price list, which is the only source of truth. And the draft.
+
+Press check. For every line in the draft, Proofquote finds the price list line for that item, and checks that every rupee amount, every G S T rate and every H S N code is on it. Four steps, in order, once. The lookup is plain code, not a model, so no prompt can talk it into twelve percent.
+
+Three lines pass. Two don't. Twelve percent is not on the list line for M S angle. The list says eighteen. The fifteen percent festive scheme isn't there either. The list says no scheme this week.
+
+Proofquote never types eighteen in for you. Ravi removes the lines, or adds the missing line to the list if it is real. Until then, send stays shut.
+
+Then n eight n emails the checked quote to the sales lead. Every rate sits next to the list line behind it, and what was removed is shown, struck through.
+
+Other tools write the quote. Proofquote checks it. No list, no rate.

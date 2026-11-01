@@ -1,0 +1,31 @@
+{
+  "wiring": "sequential, one pass, no retry loop",
+  "why_not_one_prompt": "A prompt asked to write 12% will write 12%. Splitting a messy draft is a language job; deciding whether a rate is on the list is a lookup, so it stays in code the model can't override.",
+  "agents": [
+    {
+      "name": "Extractor",
+      "goal": "Split the draft into one line per rate or term, numbers unchanged",
+      "uses": "LLM if a key is set (OpenAI gpt-4o-mini or Gemini 2.0 Flash), else line-by-line split",
+      "guard": "Any model line containing a number not in the draft is discarded",
+      "pattern": "Tool use"
+    },
+    {
+      "name": "Citation checker",
+      "goal": "For each line, find the price-list line for that item; pass only if every ₹, GST %, HSN and other number is on it",
+      "uses": "src/lib/cite.ts (no model)",
+      "pattern": "Tool use, external check"
+    },
+    {
+      "name": "Pack writer",
+      "goal": "Lay out the quote with each line next to its list line, and list what was removed",
+      "uses": "buildPack in src/lib/cite.ts (no model)",
+      "pattern": "Planning (fixed layout)"
+    },
+    {
+      "name": "Critic",
+      "goal": "Hold Send while any line is off the list. Never fill in a replacement rate",
+      "uses": "src/Product.tsx (no model); human removes or fixes",
+      "pattern": "Reflection against an external signal, human in the loop"
+    }
+  ]
+}
