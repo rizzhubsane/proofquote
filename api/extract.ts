@@ -1,4 +1,4 @@
-import { handleExtract } from "../server/handlers";
+import { handleExtract } from "../server/handlers.js";
 
 type Req = { method?: string; body?: { list?: string; draft?: string } };
 type Res = { status: (code: number) => { json: (body: unknown) => void } };

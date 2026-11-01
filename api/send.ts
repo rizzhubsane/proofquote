@@ -1,4 +1,4 @@
-import { handleSend, type PackBody } from "../server/handlers";
+import { handleSend, type PackBody } from "../server/handlers.js";
 
 type Req = { method?: string; body?: { pack?: PackBody } };
 type Res = { status: (code: number) => { json: (body: unknown) => void } };

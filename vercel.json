@@ -1,3 +1,7 @@
 {
-  "framework": "vite"
+  "framework": "vite",
+  "functions": {
+    "api/extract.ts": { "includeFiles": "server/**" },
+    "api/send.ts": { "includeFiles": "server/**" }
+  }
 }
